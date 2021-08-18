@@ -1,2 +1,2 @@
 # AdvDrop
-Code for "Adversarial attack by dropping information."
+Code for "AdvDrop: Adversarial Attack to DNNs by Dropping Information." (ICCV 2021)
