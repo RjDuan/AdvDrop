@@ -35,7 +35,7 @@ python infod_sample.py
 
 #### Adv Images
 <p align='center'>
-  <img src='imgs/fig1.png' width='800'/>
+  <img src='imgs/fig1.jpg' width='800'/>
 </p>
 
 
