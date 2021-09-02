@@ -7,7 +7,7 @@ Human can easily recognize visual objects with lost information: even losing mos
 Towards this end, we propose a novel adversarial attack, named AdvDrop, which crafts adversarial examples by dropping existing information of images.
 Previously, most adversarial attacks add extra disturbing information on clean images explicitly. Opposite to previous works, our proposed work explores the adversarial robustness of DNN models in a novel perspective by dropping imperceptible details to craft adversarial examples.
 <p align='center'>
-  <img src='pipeline-final.jpg' width='800'/>
+  <img src='imgs/pipeline-final.jpg' width='800'/>
 </p>
 [Paper link](http://arxiv.org/abs/2108.09034)
 
