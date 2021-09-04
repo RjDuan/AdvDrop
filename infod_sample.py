@@ -173,16 +173,16 @@ if __name__ == "__main__":
     ).to(device)
     resnet_model = resnet_model.eval()
     
- 
-    save_dir = "./results"
-    create_dir(save_dir)
+    # Uncomment if you want save results
+    # save_dir = "./results"
+    # create_dir(save_dir)
     batch_size = 20
     tar_cnt = 2000
     q_size = 40
     cur_cnt = 0
     suc_cnt = 0
 
-    normal_data = image_folder_custom_label(root='./resnet50_data', transform=transform, idx2label=class2label)
+    normal_data = image_folder_custom_label(root='./test-data', transform=transform, idx2label=class2label)
     normal_loader = torch.utils.data.DataLoader(normal_data, batch_size=batch_size, shuffle=False)
 
 
@@ -190,17 +190,21 @@ if __name__ == "__main__":
     for i in range(tar_cnt//batch_size):
         print("Iter: ", i)
         images, labels = normal_iter.next()  
+        # For target attack: set random target. 
+        # Comment if you set untargeted attack.
         labels = torch.from_numpy(np.random.randint(0, 1000, size = batch_size))
+        
         images = images * 255.0
         attack = InfoDrop(resnet_model, batch_size=batch_size, q_size =q_size, steps=150, targeted = True)    
         at_images, at_labels, suc_step = attack(images, labels)
 
-        at_images_np = at_images.detach().cpu().numpy() 
-        adv_img = at_images_np[0]
-        adv_img = np.moveaxis(adv_img, 0, 2) 
-        adv_dir = os.path.join(save_dir, str(q_size))
-        img_name = "adv_{}.jpg".format(i)
-        save_img(adv_img, img_name, adv_dir)
+        # Uncomment following codes if you wang to save the resultant adv imgs
+        # at_images_np = at_images.detach().cpu().numpy() 
+        # adv_img = at_images_np[0]
+        # adv_img = np.moveaxis(adv_img, 0, 2) 
+        # adv_dir = os.path.join(save_dir, str(q_size))
+        # img_name = "adv_{}.jpg".format(i)
+        # save_img(adv_img, img_name, adv_dir)
 
         labels = labels.to(device)
         suc_cnt += (at_labels == labels).sum().item()
