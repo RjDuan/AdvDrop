@@ -167,7 +167,6 @@ if __name__ == "__main__":
     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
     resnet_model = nn.Sequential(
-        transforms.Resize((224, 224)),
         norm_layer,
         models.resnet50(pretrained=True)
     ).to(device)
