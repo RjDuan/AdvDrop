@@ -86,8 +86,6 @@ class InfoDrop(Attack):
             rgb_images = rgb_images.permute(0, 3, 1, 2)
             outputs = self.model(rgb_images)
             _, pre = torch.max(outputs.data, 1)
-            # output = self.model(rgb_images)
-            # _, pre = torch.argmax(output.data, dim=1)
             if self.targeted:
                 suc_rate = ((pre == labels).sum()/self.batch_size).cpu().detach().numpy()
             else:
@@ -176,12 +174,13 @@ if __name__ == "__main__":
     # save_dir = "./results"
     # create_dir(save_dir)
     batch_size = 20
-    tar_cnt = 2000
+    tar_cnt = 1000
     q_size = 40
     cur_cnt = 0
     suc_cnt = 0
-
-    normal_data = image_folder_custom_label(root='./test-data', transform=transform, idx2label=class2label)
+    data_dir = "./test-data"
+    data_clean(data_dir)
+    normal_data = image_folder_custom_label(root=data_dir, transform=transform, idx2label=class2label)
     normal_loader = torch.utils.data.DataLoader(normal_data, batch_size=batch_size, shuffle=False)
 
 
@@ -197,7 +196,7 @@ if __name__ == "__main__":
         attack = InfoDrop(resnet_model, batch_size=batch_size, q_size =q_size, steps=150, targeted = True)    
         at_images, at_labels, suc_step = attack(images, labels)
 
-        # Uncomment following codes if you wang to save the resultant adv imgs
+        # Uncomment following codes if you wang to save the adv imgs
         # at_images_np = at_images.detach().cpu().numpy() 
         # adv_img = at_images_np[0]
         # adv_img = np.moveaxis(adv_img, 0, 2) 
