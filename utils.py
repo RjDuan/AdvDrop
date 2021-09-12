@@ -94,3 +94,13 @@ def create_dir(dir, print_flag = False):
             print("Create dir {} successfully!".format(dir))
     elif print_flag:
         print("Directory {} is already existed. ".format(dir))
+        
+def data_clean(data_dir):
+    for class_name in os.listdir(data_dir):
+        class_path = os.path.join(data_dir, class_name)
+        if os.path.isfile(class_path):
+            os.remove(class_path)
+        for img_name in os.listdir(class_path):
+            img_path = os.path.join(class_path, img_name)
+            if not img_name.endswith(".png"):
+                os.remove(img_path)
