@@ -47,7 +47,7 @@ class InfoDrop(Attack):
         self.alpha_interval = torch.tensor((self.alpha_range[1] - self.alpha_range[0])/ self.steps)
         block_n = np.ceil(height / block_size) * np.ceil(height / block_size) 
         q_ini_table = np.empty((batch_size,int(block_n),block_size,block_size), dtype = np.float32)
-        q_ini_table.fill(self.factor_range[0])
+        q_ini_table.fill(q_size)
         self.q_tables = {"y": torch.from_numpy(q_ini_table),
                         "cb": torch.from_numpy(q_ini_table),
                         "cr": torch.from_numpy(q_ini_table)}        
