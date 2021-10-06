@@ -15,6 +15,8 @@ from  torchattacks.attack import Attack
 from utils import *
 from compression import *
 from decompression import *
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class InfoDrop(Attack):
