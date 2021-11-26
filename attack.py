@@ -18,7 +18,7 @@ from utils import *
 from compression import *
 from decompression import *
 from PIL import ImageFile
-
+import matplotlib
 
 class Normalize(nn.Module):
     def __init__(self, mean, std):
@@ -56,6 +56,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(), ])
+
 norm_layer = Normalize(mean=[0.485, 0.456, 0.406],
                        std=[0.229, 0.224, 0.225])
 resnet_model = nn.Sequential(
@@ -81,7 +82,7 @@ We set quantization table q with 100 for AdvDrop.
 
 
 
-batch_size = 20
+batch_size = 10
 tar_cnt = 1000
 cur_cnt = 0
 suc_cnt = 0
@@ -138,9 +139,13 @@ for i in range(tar_cnt // batch_size):
     adv_img = at_images_np[0]
     adv_img = np.moveaxis(adv_img, 0, 2)
     adv_dir = os.path.join(save_dir, str(eps))
+    create_dir(adv_dir)
     img_name = "adv_{}.jpg".format(i)
-    save_img(adv_img, img_name, adv_dir)
-    labels = torch.from_numpy(np.random.randint(0, 1000, size=batch_size))
+    adv_path = os.path.join(adv_dir, img_name)
+
+    matplotlib.image.imsave(adv_path, adv_img)
+    #save_img(adv_img, img_name, adv_dir)
+    #labels = torch.from_numpy(np.random.randint(0, 1000, size=batch_size))
 
 
 
