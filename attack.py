@@ -21,6 +21,19 @@ from PIL import ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+attack_methods = {"PGD": [torchattacks.PGD, "l_inf"],
+                "PGDL2": [torchattacks.PGDL2, "l2"],
+                "FGSM": [torchattacks.FGSM, "l_inf"],
+                "BIM": [torchattacks.BIM, "l_inf"],
+                 "CW" : [torchattacks.CW, "l2"],
+                 "Dfool": [torchattacks.DeepFool, "l2"]
+                }
+
+"""
+We set epsilon = 4 for attacks on l∞ setting, set epsilon = 0.06 for attacks
+on l2 setting that are common used in previous defense methods.
+We set quantization table q with 100 for AdvDrop.
+"""
 class Normalize(nn.Module):
     def __init__(self, mean, std):
         super(Normalize, self).__init__()
@@ -58,51 +71,57 @@ def pred_label_and_confidence(model, input_batch, labels_to_class):
     return pred_list
 
 
-if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    class_idx = json.load(open("./imagenet_class_index.json"))
-    idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
-    class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(), ])
 
-    norm_layer = Normalize(mean=[0.485, 0.456, 0.406],
-                           std=[0.229, 0.224, 0.225])
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(), ])
 
-    resnet_model = nn.Sequential(
-        norm_layer,
-        models.resnet50(pretrained=True)
-    ).to(device)
-    resnet_model = resnet_model.eval()
 
-    # Uncomment if you want save results
-    # save_dir = "./results"
-    # create_dir(save_dir)
-    batch_size = 20
-    tar_cnt = 1000
-    cur_cnt = 0
-    suc_cnt = 0
-    data_dir = "./test-data"
-    data_clean(data_dir)
-    normal_data = image_folder_custom_label(root=data_dir,
-                                            transform=transform,
-                                            idx2label=class2label)
-    normal_loader = torch.utils.data.DataLoader(normal_data,
-                                                batch_size=batch_size,
-                                                shuffle=False)
+norm_layer = Normalize(mean=[0.485, 0.456, 0.406],
+                       std=[0.229, 0.224, 0.225])
 
-    normal_iter = iter(normal_loader)
-    for i in range(tar_cnt // batch_size):
-        print("Iter: ", i)
-        images, labels = normal_iter.next()
-        attack = torchattacks.PGD(resnet_model, eps=4 / 255, alpha=1 / 255, steps=50,
-                                  random_start=True)
-        adv_images = attack(images, labels)
+resnet_model = nn.Sequential(
+    norm_layer,
+    models.resnet50(pretrained=True)
+).to(device)
+resnet_model = resnet_model.eval()
 
-        labels = torch.from_numpy(np.random.randint(0, 1000, size=batch_size))
+# Uncomment if you want save results
+# save_dir = "./results"
+# create_dir(save_dir)
+batch_size = 20
+tar_cnt = 1000
+cur_cnt = 0
+suc_cnt = 0
+eps = 4/255
+steps = 50
 
-        images = images * 255.0
+
+data_dir = "./test-data"
+normal_loader = get_data(data_dir="./test-data", transform=transform, batch_size=batch_size)
+save_dir = "./results"
+create_dir(save_dir)
+
+
+
+#normal_iter = iter(normal_loader)
+for i in range(tar_cnt // batch_size):
+    print("Iter: ", i)
+    images, labels = normal_iter.next()
+    attack = torchattacks.PGD(resnet_model, eps=eps, alpha=1 / 255, steps=steps,
+                              random_start=True)
+    at_images = attack(images, labels)
+    # Uncomment following codes if you wang to save the adv imgs
+    at_images_np = at_images.detach().cpu().numpy()
+    adv_img = at_images_np[0]
+    adv_img = np.moveaxis(adv_img, 0, 2)
+    adv_dir = os.path.join(save_dir, str(eps))
+    img_name = "adv_{}.jpg".format(i)
+    save_img(adv_img, img_name, adv_dir)
+    labels = torch.from_numpy(np.random.randint(0, 1000, size=batch_size))
+
+    images = images * 255.0
 
 
