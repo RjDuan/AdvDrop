@@ -1,1 +1,3 @@
-test-data/
+test_data/
+results/
+__pycache__/
