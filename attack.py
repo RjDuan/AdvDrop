@@ -90,8 +90,8 @@ eps = 4/255
 steps = 50
 
 
-data_dir = "./test-data"
-normal_loader = get_data(data_dir="./test-data", transform=transform, batch_size=batch_size)
+data_dir = "./test_data"
+normal_loader = get_data(data_dir="./test_data", transform=transform, batch_size=batch_size)
 save_dir = "./results"
 create_dir(save_dir)
 

@@ -180,7 +180,7 @@ if __name__ == "__main__":
     q_size = 40
     cur_cnt = 0
     suc_cnt = 0
-    data_dir = "./test-data"
+    data_dir = "./test_data"
     data_clean(data_dir)
     normal_data = image_folder_custom_label(root=data_dir, transform=transform, idx2label=class2label)
     normal_loader = torch.utils.data.DataLoader(normal_data, batch_size=batch_size, shuffle=False)
