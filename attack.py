@@ -82,7 +82,7 @@ We set quantization table q with 100 for AdvDrop.
 
 
 
-batch_size = 10
+batch_size = 20
 tar_cnt = 1000
 cur_cnt = 0
 suc_cnt = 0
