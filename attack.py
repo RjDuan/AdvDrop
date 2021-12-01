@@ -84,7 +84,7 @@ if __name__ == "__main__":
     tar_cnt = 1000
     cur_cnt = 0
     suc_cnt = 0
-    data_dir = "./test-data"
+    data_dir = "./test_data"
     data_clean(data_dir)
     normal_data = image_folder_custom_label(root=data_dir,
                                             transform=transform,
