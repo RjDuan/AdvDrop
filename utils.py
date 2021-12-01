@@ -7,6 +7,16 @@ import os
 # PyTorch
 import torch
 import torch.nn as nn
+import json
+import torchvision.transforms as transforms
+
+class_idx = json.load(open("./imagenet_class_index.json"))
+idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
+class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
+
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(), ])
 
 y_table = np.array(
     [[16, 11, 10, 16, 24, 40, 51, 61], [12, 12, 14, 19, 26, 58, 60,
@@ -104,3 +114,15 @@ def data_clean(data_dir):
             img_path = os.path.join(class_path, img_name)
             if not img_name.endswith(".png"):
                 os.remove(img_path)
+
+def get_data(data_dir, transform, batch_size, class2label):
+    data_clean(data_dir)
+
+    normal_data = image_folder_custom_label(root=data_dir,
+                                            transform=transform,
+                                            idx2label=class2label)
+    normal_loader = torch.utils.data.DataLoader(normal_data,
+                                                batch_size=batch_size,
+                                                shuffle=False)
+
+    return normal_loader

@@ -16,7 +16,7 @@ from utils import *
 from compression import *
 from decompression import *
 from PIL import ImageFile
-ImageFile.LOAD_TRUNCATED_IMAGES = True
+ImageFile.LOAD_TRUNCATED_IMAGES = True #
 
 
 class InfoDrop(Attack):
@@ -155,13 +155,7 @@ def pred_label_and_confidence(model, input_batch, labels_to_class):
    
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    class_idx = json.load(open("./imagenet_class_index.json"))
-    idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
-    class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
-    
-    transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),])  
+
     
     
     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -180,13 +174,11 @@ if __name__ == "__main__":
     q_size = 40
     cur_cnt = 0
     suc_cnt = 0
+
     data_dir = "./test_data"
-    data_clean(data_dir)
-    normal_data = image_folder_custom_label(root=data_dir, transform=transform, idx2label=class2label)
-    normal_loader = torch.utils.data.DataLoader(normal_data, batch_size=batch_size, shuffle=False)
-
-
+    normal_loader = get_data(data_dir, transform, batch_size, class2label)
     normal_iter = iter(normal_loader)
+
     for i in range(tar_cnt//batch_size):
         print("Iter: ", i)
         images, labels = normal_iter.next()  
