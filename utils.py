@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import json
 import torchvision.transforms as transforms
-
+from PIL import Image
 class_idx = json.load(open("./imagenet_class_index.json"))
 idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
 class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
@@ -104,7 +104,13 @@ def create_dir(dir, print_flag = False):
             print("Create dir {} successfully!".format(dir))
     elif print_flag:
         print("Directory {} is already existed. ".format(dir))
-        
+
+def save_img(img, img_name, save_dir):
+    create_dir(save_dir)
+    img_path = os.path.join(save_dir, img_name)
+    img_pil = Image.fromarray(img.astype(np.uint8))
+    img_pil.save(img_path)
+
 def data_clean(data_dir):
     for class_name in os.listdir(data_dir):
         class_path = os.path.join(data_dir, class_name)
