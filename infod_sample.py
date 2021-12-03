@@ -66,15 +66,15 @@ if __name__ == "__main__":
     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     # Data is normalized after dropping the information
 
-    resnet_model = nn.Sequential(norm_layer, models.resnet50(pretrained=True).to(device))
-    resnet_model = resnet_model.eval()
-    model_name = "ResNet50"
+    model = nn.Sequential(norm_layer, diet_tiny().to(device))
+    model = model.eval()
+    model_name = "DieT_tiny"
     # Uncomment if you want save results
     # save_dir = "./results"
     # create_dir(save_dir)
     batch_size = 20
     tar_cnt = 1000
-    q_size = 20
+    q_size = 60
     cur_cnt = 0
     suc_cnt = 0
     data_dir = "./test-data"
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         
         images = images * 255.0
         steps = 500 if targetted_attack else 50
-        attack = InfoDrop(resnet_model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted = targetted_attack)
+        attack = InfoDrop(model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted = targetted_attack)
         at_images, at_labels, suc_step = attack(images, labels)
 
         #Uncomment following codes if you wang to save the adv imgs
