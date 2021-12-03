@@ -51,7 +51,12 @@ def pred_label_and_confidence(model, input_batch, labels_to_class):
         pred_list.append([pred_class, pred_conf])
     return pred_list
 
+"""
+fool rate : Percentage of success of an adversarial attack, i.e., expected
+number of times the attack is able to flip the label because of the
+added perturbation.
 
+"""
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     class_idx = json.load(open("./imagenet_class_index.json"))
@@ -85,6 +90,7 @@ if __name__ == "__main__":
     targetted_attack = False
 
     i =0
+    fool_rate = 0
     for i, (images, labels) in enumerate(normal_loader): #in range(tar_cnt//batch_size):
         print("Iter: ", i)
 
@@ -93,8 +99,14 @@ if __name__ == "__main__":
         
         images = images * 255.0
         steps = 500 if targetted_attack else 50
-        attack = InfoDrop(model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted = targetted_attack)
+        attack = InfoDrop(model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted= targetted_attack)
         at_images, at_labels, suc_step = attack(images, labels)
+       ### Calculate fool rate
+        outputs_pre_attack = model(images.to(device="cuda"))
+        _, pred_pre_attack_label = torch.max(outputs_pre_attack.data, 1)
+        fool_rate += torch.sum(pred_pre_attack_label!=at_labels)
+
+
 
         #Uncomment following codes if you wang to save the adv imgs
         at_images_np = at_images.detach().cpu().numpy()
@@ -116,3 +128,4 @@ if __name__ == "__main__":
     score_list[:suc_cnt] = 1.0
     stderr_dist = np.std(np.array(score_list)) / np.sqrt(len(score_list))
     print('Avg suc rate: %.5f +/- %.5f' % (suc_cnt / len(normal_data), stderr_dist))
+    print(f"Fool Rate is : {fool_rate/len(normal_data)}")
