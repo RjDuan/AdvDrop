@@ -20,7 +20,9 @@ from info_attack import InfoDrop
 from Models.transformers import diet_tiny, diet_small, vit_tiny, vit_small
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-
+model_t =[diet_tiny, diet_small, vit_tiny, vit_small]
+q_sizes = [20, 60, 100]
+model_names = ["dieT_tiny", "dieT_small", "vit_tiny", "vit_small"]
 class Normalize(nn.Module) :
     def __init__(self, mean, std) :
         super(Normalize, self).__init__()
@@ -58,74 +60,83 @@ added perturbation.
 
 """
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    class_idx = json.load(open("./imagenet_class_index.json"))
-    idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
-    class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
-    
-    transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),]
-    )
+    idx = 0
+    f = open("results.txt", "w")
+    for next_model in model_t:
 
-    norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    # Data is normalized after dropping the information
-
-    model = nn.Sequential(norm_layer, diet_tiny().to(device))
-    model = model.eval()
-    model_name = "DieT_tiny"
-    # Uncomment if you want save results
-    # save_dir = "./results"
-    # create_dir(save_dir)
-    batch_size = 20
-    tar_cnt = 1000
-    q_size = 60
-    cur_cnt = 0
-    suc_cnt = 0
-    data_dir = "./test-data"
-    save_dir = "./results"
-    data_clean(data_dir)
-    normal_data = image_folder_custom_label(root=data_dir, transform=transform, idx2label=class2label)
-    normal_loader = torch.utils.data.DataLoader(normal_data, batch_size=batch_size, shuffle=False)
-    targetted_attack = False
-
-    i =0
-    fool_rate = 0
-    for i, (images, labels) in enumerate(normal_loader): #in range(tar_cnt//batch_size):
-        print("Iter: ", i)
-
-        if targetted_attack:
-            labels = torch.from_numpy(np.random.randint(0, 1000, size= batch_size))
+        print(f"{idx}::: model_name: {model_names[idx]}")
+        name = model_names[idx]
         
-        images = images * 255.0
-        steps = 500 if targetted_attack else 50
-        attack = InfoDrop(model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted= targetted_attack)
-        at_images, at_labels, suc_step = attack(images, labels)
-       ### Calculate fool rate
-        outputs_pre_attack = model(images.to(device="cuda"))
-        _, pred_pre_attack_label = torch.max(outputs_pre_attack.data, 1)
-        fool_rate += torch.sum(pred_pre_attack_label!=at_labels)
+        for q_size in q_sizes:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            class_idx = json.load(open("./imagenet_class_index.json"))
+            idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
+            class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
+            
+            transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),]
+            )
+
+            norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            # Data is normalized after dropping the information
+
+            model = nn.Sequential(norm_layer,next_model().to(device))
+            model = model.eval()
+            model_name = name
+            batch_size = 20
+            tar_cnt = 1000
+            q_size = q_size
+            cur_cnt = 0
+            suc_cnt = 0
+            data_dir = "./test-data"
+            save_dir = "./results"
+            data_clean(data_dir)
+            normal_data = image_folder_custom_label(root=data_dir, transform=transform, idx2label=class2label)
+            normal_loader = torch.utils.data.DataLoader(normal_data, batch_size=batch_size, shuffle=False)
+            targetted_attack = True
+
+            i =0
+            fool_rate = 0
+            for i, (images, labels) in enumerate(normal_loader): #in range(tar_cnt//batch_size):
+                print("Iter: ", i)
+
+                if targetted_attack:
+                    labels = torch.from_numpy(np.random.randint(0, 1000, size= images.shape[0]))
+                
+                images = images * 255.0
+                steps = 2 if targetted_attack else 50
+                attack = InfoDrop(model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted= targetted_attack)
+                at_images, at_labels, suc_step = attack(images, labels)
+                ### Calculate fool rate
+                outputs_pre_attack = model(images.to(device="cuda"))
+                _, pred_pre_attack_label = torch.max(outputs_pre_attack.data, 1)
+                fool_rate += torch.sum(pred_pre_attack_label!=at_labels)
 
 
 
-        #Uncomment following codes if you wang to save the adv imgs
-        at_images_np = at_images.detach().cpu().numpy()
-        for idx, adv_img in enumerate(at_images_np):
-            adv_img = np.moveaxis(adv_img, 0, 2)
-            adv_dir = os.path.join(save_dir, f"{model_name}_{str(q_size)}")
-            create_dir(adv_dir)
-            create_dir(f"{adv_dir}/{class_idx[str(labels[idx].item())][0]}")
-            img_name = f"{class_idx[str(labels[idx].item())][0]}/adv_{i}__{idx}.jpg"
-            save_img(adv_img, img_name, adv_dir)
+                #Uncomment following codes if you wang to save the adv imgs
+                at_images_np = at_images.detach().cpu().numpy()
+                for idx, adv_img in enumerate(at_images_np):
+                    adv_img = np.moveaxis(adv_img, 0, 2)
+                    adv_dir = os.path.join(save_dir, f"{model_name}_{str(q_size)}")
+                    create_dir(adv_dir)
+                    create_dir(f"{adv_dir}/{class_idx[str(labels[idx].item())][0]}")
+                    img_name = f"{class_idx[str(labels[idx].item())][0]}/adv_{i}__{idx}.jpg"
+                    save_img(adv_img, img_name, adv_dir)
 
-        labels = labels.to(device)
-        if targetted_attack:
-            suc_cnt += (at_labels == labels).sum().item()
-        else:
-            suc_cnt += (at_labels != labels).sum().item()
-        print("Current suc. rate: ", suc_cnt/((i+1)*batch_size))
-    score_list = np.zeros(len(normal_data))
-    score_list[:suc_cnt] = 1.0
-    stderr_dist = np.std(np.array(score_list)) / np.sqrt(len(score_list))
-    print('Avg suc rate: %.5f +/- %.5f' % (suc_cnt / len(normal_data), stderr_dist))
-    print(f"Fool Rate is : {fool_rate/len(normal_data)}")
+                labels = labels.to(device)
+                if targetted_attack:
+                    suc_cnt += (at_labels == labels).sum().item()
+                else:
+                    suc_cnt += (at_labels != labels).sum().item()
+                print("Current suc. rate: ", suc_cnt/((i+1)*batch_size))
+            score_list = np.zeros(len(normal_data))
+            score_list[:suc_cnt] = 1.0
+            stderr_dist = np.std(np.array(score_list)) / np.sqrt(len(score_list))
+            print('Avg suc rate: %.5f +/- %.5f' % (suc_cnt / len(normal_data), stderr_dist))
+            print(f"Fool Rate {q_size} is : {fool_rate/len(normal_data)}")
+            f.write(f"{name}_{q_size},{(suc_cnt / len(normal_data))}, {stderr_dist}, {fool_rate/len(normal_data)} \n")
+            idx += 1
+
+    f.close()
