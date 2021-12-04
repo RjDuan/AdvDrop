@@ -60,12 +60,12 @@ added perturbation.
 
 """
 if __name__ == "__main__":
-    idx = 0
+    idx_ = 0
     f = open("results.txt", "w")
     for next_model in model_t:
 
-        print(f"{idx}::: model_name: {model_names[idx]}")
-        name = model_names[idx]
+        print(f"{idx_}::: model_name: {model_names[idx_]}")
+        name = model_names[idx_]
         
         for q_size in q_sizes:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -105,7 +105,7 @@ if __name__ == "__main__":
                     labels = torch.from_numpy(np.random.randint(0, 1000, size= images.shape[0]))
                 
                 images = images * 255.0
-                steps = 2 if targetted_attack else 50
+                steps = 500 if targetted_attack else 50
                 attack = InfoDrop(model, batch_size=images.shape[0], q_size =q_size, steps=steps, targeted= targetted_attack)
                 at_images, at_labels, suc_step = attack(images, labels)
                 ### Calculate fool rate
@@ -137,6 +137,6 @@ if __name__ == "__main__":
             print('Avg suc rate: %.5f +/- %.5f' % (suc_cnt / len(normal_data), stderr_dist))
             print(f"Fool Rate {q_size} is : {fool_rate/len(normal_data)}")
             f.write(f"{name}_{q_size},{(suc_cnt / len(normal_data))}, {stderr_dist}, {fool_rate/len(normal_data)} \n")
-            idx += 1
+        idx_ += 1
 
     f.close()
