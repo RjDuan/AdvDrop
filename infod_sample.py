@@ -20,9 +20,11 @@ from info_attack import InfoDrop
 from Models.transformers import diet_tiny, diet_small, vit_tiny, vit_small
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-model_t =[diet_tiny, diet_small, vit_tiny, vit_small]
+model_t =[models.resnet50]
+
 q_sizes = [20, 60, 100]
-model_names = ["dieT_tiny", "dieT_small", "vit_tiny", "vit_small"]
+model_names = ["resnet50_targetted"]
+#model_names = ["diet_tiny_targetted", "diet_small_targetted", "vit_tiny_targetted", "vit_small_targetted"]
 class Normalize(nn.Module) :
     def __init__(self, mean, std) :
         super(Normalize, self).__init__()
@@ -81,7 +83,7 @@ if __name__ == "__main__":
             norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             # Data is normalized after dropping the information
 
-            model = nn.Sequential(norm_layer,next_model().to(device))
+            model = nn.Sequential(norm_layer,next_model(pretrained=True).to(device))
             model = model.eval()
             model_name = name
             batch_size = 20
@@ -98,9 +100,10 @@ if __name__ == "__main__":
 
             i =0
             fool_rate = 0
+            file_number = 0
             for i, (images, labels) in enumerate(normal_loader): #in range(tar_cnt//batch_size):
                 print("Iter: ", i)
-
+                gt_labels = labels
                 if targetted_attack:
                     labels = torch.from_numpy(np.random.randint(0, 1000, size= images.shape[0]))
                 
@@ -121,8 +124,9 @@ if __name__ == "__main__":
                     adv_img = np.moveaxis(adv_img, 0, 2)
                     adv_dir = os.path.join(save_dir, f"{model_name}_{str(q_size)}")
                     create_dir(adv_dir)
-                    create_dir(f"{adv_dir}/{class_idx[str(labels[idx].item())][0]}")
-                    img_name = f"{class_idx[str(labels[idx].item())][0]}/adv_{i}__{idx}.jpg"
+                    create_dir(f"{adv_dir}/{class_idx[str(gt_labels[idx].item())][0]}")
+                    img_name = f"{class_idx[str(gt_labels[idx].item())][0]}/adv_{file_number:04d}.jpg"
+                    file_number += 1
                     save_img(adv_img, img_name, adv_dir)
 
                 labels = labels.to(device)
