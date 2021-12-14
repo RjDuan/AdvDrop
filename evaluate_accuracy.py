@@ -7,8 +7,11 @@ import torchvision.transforms as transforms
 import json
 from utils import get_data, create_dir
 from PIL import Image
-
+import timm
+from timm.data import resolve_data_config
+from timm.data.transforms_factory import create_transform
 from PIL import ImageFile
+from Models.transformers import vit_tiny, vit_small, diet_tiny, diet_small
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Normalize(nn.Module):
@@ -30,13 +33,6 @@ idx2label = [class_idx[str(k)][1] for k in range(len(class_idx))]
 class2label = [class_idx[str(k)][0] for k in range(len(class_idx))]
 
 
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                       std=[0.229, 0.224, 0.225])])
-
-
 
 
 OUT_DIR = '/tmp/'
@@ -54,13 +50,24 @@ imagenet_ds = ImageNet('/tmp/')
 # model , _ = model_utils.make_and_restore_model(arch='resnet50', dataset=imagenet_ds,
 #                                                           resume_path="/home/hashmat.malik/PycharmProjects/Thesis/Robust Model Checkpoints/MadryLab/ResNet50/L2/imagenet_l2_3_0.pt", parallel=False)
 
-model  = models.resnet50(pretrained=True).to(device)
+## timm models
+# model  = diet_small().to(device=device)
+# config = resolve_data_config({}, model = model)
+# transform = create_transform(**config)
+### torch model
+model = models.resnet50(pretrained=True).to(device=device)
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                       std=[0.229, 0.224, 0.225])])
+
 
 
 model = model.eval()
-batch_size = 100
+batch_size = 4
 
-data_dir = "./results/resnet50_targetted_20"
+data_dir = "./test-data"
 normal_loader = get_data(data_dir, transform, batch_size, class2label)
 
 
