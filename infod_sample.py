@@ -19,11 +19,12 @@ from PIL import ImageFile
 from info_attack import InfoDrop
 from Models.transformers import diet_tiny, diet_small, vit_tiny, vit_small
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-
-model_t =[models.resnet50]
+from timm.data import resolve_data_config
+from timm.data.transforms_factory import  create_transform
+model_t =[vit_tiny]
 
 q_sizes = [20, 60, 100]
-model_names = ["resnet50_targetted"]
+model_names = ["vit_tiny_targetted"]
 #model_names = ["diet_tiny_targetted", "diet_small_targetted", "vit_tiny_targetted", "vit_small_targetted"]
 class Normalize(nn.Module) :
     def __init__(self, mean, std) :
@@ -80,10 +81,15 @@ if __name__ == "__main__":
             transforms.ToTensor(),]
             )
 
-            norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            # Data is normalized after dropping the information
 
-            model = nn.Sequential(norm_layer,next_model(pretrained=True).to(device))
+            # Data is normalized after dropping the information
+            backbone = next_model()
+            config = resolve_data_config({}, model = backbone)
+            transform = create_transform(**config)
+            transform.transforms.pop()
+            norm_layer = Normalize(mean=config['mean'], std=config['std'])
+
+            model = nn.Sequential(norm_layer, backbone.to(device))
             model = model.eval()
             model_name = name
             batch_size = 20
