@@ -36,11 +36,31 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                        std=[0.229, 0.224, 0.225])])
 
-model  = models.resnet50(pretrained=True).to(device)
-model = model.eval()
-batch_size = 2
 
-data_dir = "./test-data"
+
+
+OUT_DIR = '/tmp/'
+#NUM_WORKERS = 16
+
+from robustness import model_utils, datasets, train, defaults
+from robustness.datasets import CIFAR, ImageNet
+import torch
+from cox.utils import Parameters
+import cox.store
+from torchvision import transforms
+from torchvision import models
+
+imagenet_ds = ImageNet('/tmp/')
+# model , _ = model_utils.make_and_restore_model(arch='resnet50', dataset=imagenet_ds,
+#                                                           resume_path="/home/hashmat.malik/PycharmProjects/Thesis/Robust Model Checkpoints/MadryLab/ResNet50/L2/imagenet_l2_3_0.pt", parallel=False)
+
+model  = models.resnet50(pretrained=True).to(device)
+
+
+model = model.eval()
+batch_size = 100
+
+data_dir = "./results/resnet50_targetted_20"
 normal_loader = get_data(data_dir, transform, batch_size, class2label)
 
 

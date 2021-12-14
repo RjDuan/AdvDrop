@@ -122,7 +122,7 @@ def data_clean(data_dir):
                 os.remove(img_path)
 
 def get_data(data_dir, transform, batch_size, class2label):
-    data_clean(data_dir)
+    #data_clean(data_dir)
 
     normal_data = image_folder_custom_label(root=data_dir,
                                             transform=transform,
