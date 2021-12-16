@@ -27,7 +27,7 @@ Download [dataset](https://drive.google.com/file/d/1JcFFt-T0HtvqFmOUMOqX4UD6uG0K
 ## Usage
 #### Quick Start
 ```sh
-python infod_sample.py
+python infod_sample_orig.py
 ```
 * Parameters can be speicified in infod_sample.py.
 

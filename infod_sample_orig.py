@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 #Uncomment following codes if you wang to save the adv imgs
                 at_images_np = at_images.detach().cpu().numpy()
                 for idx, adv_img in enumerate(at_images_np):
-                    adv_img = np.moveaxis(adv_img, 0, 2)
+                    adv_img = np.moveaxis(adv_img, 1, 2)
                     adv_dir = os.path.join(save_dir, f"{model_name}_{str(q_size)}")
                     create_dir(adv_dir)
                     create_dir(f"{adv_dir}/{class_idx[str(gt_labels[idx].item())][0]}")
