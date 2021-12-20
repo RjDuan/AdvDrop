@@ -79,12 +79,7 @@ def lpips_2imgs(img_batch0, img_batch1, version="0.1", use_gpu=True):
     return dist01
 
 
-"""
-TODO: Add normalization for different models
-After getting adversarial images of the batch, compute the lpips 
-similarity and accumulate it.
 
-"""
 if __name__ == "__main__":
     f = open("results_all_smaller_q.txt", "w")
 
