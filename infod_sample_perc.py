@@ -30,7 +30,7 @@ from timm.data import resolve_data_config
 from timm.data.transforms_factory import create_transform
 
 model_t = ["resnet", vit_tiny, vit_small, diet_tiny, diet_small]
-q_sizes = [20, 60, 100]
+q_sizes = [10, 15]
 attacks = [True, False]
 model_names = ["ResNet50", "ViT_tiny", "ViT_small", "DieT_tiny", "DieT_small"]
 
@@ -86,7 +86,7 @@ similarity and accumulate it.
 
 """
 if __name__ == "__main__":
-    f = open("results_all.txt", "w")
+    f = open("results_all_smaller_q.txt", "w")
 
     for att in attacks:
         idx_ = 0
@@ -129,7 +129,7 @@ if __name__ == "__main__":
                 model = nn.Sequential(norm_layer, backbone.to(device))
                 model = model.eval()
                 model_name = name
-                batch_size = 2
+                batch_size = 20
                 q_size = q_size
                 cur_cnt = 0
                 suc_cnt = 0
@@ -192,4 +192,5 @@ if __name__ == "__main__":
                     f"{name}_{q_size},{(suc_cnt / len(normal_data))}, {stderr_dist}, {fool_rate / len(normal_data)}, {lpips_score / len(normal_data)} \n")
             idx_ += 1
 
-        f.close()
+    f.close()
+
