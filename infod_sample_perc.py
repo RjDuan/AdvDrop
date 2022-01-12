@@ -62,6 +62,7 @@ def pred_label_and_confidence(model, input_batch, labels_to_class):
         pred_conf = str(round(percentage[i][index[i]].item(), 2))
         pred_list.append([pred_class, pred_conf])
     return pred_list
+
 def lpips_2imgs(img_batch0, img_batch1, version="0.1", use_gpu=True):
     loss_fn = lpips.LPIPS(net='alex', version=version)
 

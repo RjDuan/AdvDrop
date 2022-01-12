@@ -2,6 +2,6 @@ test-data/
 __pycache__/
 results/
 .ipynb_checkpoints/
-
+.idea/
 
 
