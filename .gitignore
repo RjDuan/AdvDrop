@@ -3,5 +3,8 @@ __pycache__/
 results/
 .ipynb_checkpoints/
 .idea/
+outdir/
+pretrained-models/
+
 
 
