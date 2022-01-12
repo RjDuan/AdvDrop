@@ -63,14 +63,15 @@ def main(args, store):
 
     model, checkpoint = get_model(args, ds)
 
-    if args.eval_only:
-        return train.eval_model(args, model, validation_loader, store=store)
-
-    update_params = freeze_model(model, freeze_level=args.freeze_level)
-
-    print(f"Dataset: {args.dataset} | Model: {args.arch}")
-    train.train_model(args, model, (train_loader, validation_loader), store=store,
-                      checkpoint=checkpoint, update_params=update_params)
+    # if args.eval_only:
+    #     return train.eval_model(args, model, validation_loader, store=store)
+    #
+    # update_params = freeze_model(model, freeze_level=args.freeze_level)
+    #
+    # print(f"Dataset: {args.dataset} | Model: {args.arch}")
+    # train.train_model(args, model, (train_loader, validation_loader), store=store,
+    #                   checkpoint=checkpoint, update_params=update_params)
+    return model
 
 
 def get_per_class_accuracy(args, loader):
@@ -182,17 +183,17 @@ def get_model(args, ds):
                                                           resume_path=args.model_path, pytorch_pretrained=args.pytorch_pretrained)
             checkpoint = None
 
-        if not args.no_replace_last_layer and not args.eval_only:
-            print(f'[Replacing the last layer with {args.additional_hidden} '
-                  f'hidden layers and 1 classification layer that fits the {args.dataset} dataset.]')
-            while hasattr(model, 'model'):
-                model = model.model
-            model = fine_tunify.ft(
-                args.arch, model, ds.num_classes, args.additional_hidden)
-            model, checkpoint = model_utils.make_and_restore_model(arch=model, dataset=ds,
-                                                                   add_custom_forward=args.additional_hidden > 0 or args.arch in pytorch_models.keys())
-        else:
-            print('[NOT replacing the last layer]')
+        # if not args.no_replace_last_layer and not args.eval_only:
+        #     print(f'[Replacing the last layer with {args.additional_hidden} '
+        #           f'hidden layers and 1 classification layer that fits the {args.dataset} dataset.]')
+        #     while hasattr(model, 'model'):
+        #         model = model.model
+        #     model = fine_tunify.ft(
+        #         args.arch, model, ds.num_classes, args.additional_hidden)
+        #     model, checkpoint = model_utils.make_and_restore_model(arch=model, dataset=ds,
+        #                                                            add_custom_forward=args.additional_hidden > 0 or args.arch in pytorch_models.keys())
+        # else:
+        #     print('[NOT replacing the last layer]')
     return model, checkpoint
 
 
@@ -286,4 +287,5 @@ if __name__ == "__main__":
         store['metadata'].append_row(args_dict)
     else:
         print('[Found existing metadata in store. Skipping this part.]')
-    main(args, store)
+    model = main(args, store)
+    a=2
